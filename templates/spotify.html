@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Spotify{% endblock %}
+{% block head %}
+{{ super() }}
+<link rel="script" href="{{ url_for('static', filename='js/spotify.js') }}">
+{% endblock %}
+{% block content %}
+<p>Willkommen bei Marci & Claudi</p>
+
+<div class="card">
+	<div class="card-header">
+		Musik
+	</div>
+	<div class="card-body">
+		<h5 class="card-title">Wähle hier bis zu 3 Lieblingslieder aus.</h5>
+		<h6 class="card-subtitle">Sie werden dann bei der Feier in die Musikauswahl aufgenommen.</h6>
+		<div class="mt-3 input-group">
+			<span class="input-group-text">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-spotify"
+					viewBox="0 0 16 16">
+					<path
+						d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.669 11.538a.5.5 0 0 1-.686.165c-1.879-1.147-4.243-1.407-7.028-.77a.499.499 0 0 1-.222-.973c3.048-.696 5.662-.397 7.77.892a.5.5 0 0 1 .166.686m.979-2.178a.624.624 0 0 1-.858.205c-2.15-1.321-5.428-1.704-7.972-.932a.625.625 0 0 1-.362-1.194c2.905-.881 6.517-.454 8.986 1.063a.624.624 0 0 1 .206.858m.084-2.268C10.154 5.56 5.9 5.419 3.438 6.166a.748.748 0 1 1-.434-1.432c2.825-.857 7.523-.692 10.492 1.07a.747.747 0 1 1-.764 1.288" />
+				</svg>
+			</span>
+			<input id="input-spotify" class="form-control" placeholder="Song, Künstler oder Album"
+				aria-label="Song, Künstler oder Album">
+			<button id="btn-spotify-search" class="btn btn-primary">Suchen</button>
+		</div>
+		<div class="container mt-3">
+			<div id="spotify-results" class="row row-cols-2 row-cols-sm-4 row-cols-lg-6 g-2">
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<template id="tmpl-spotify-song">
+	<div class="col" data-spotify-uri="123">
+		<div class="card">
+			<img src="..." alt="Album Cover" class="card-img-top">
+			<div class="card-body">
+				<div class="container">
+					<div class="row align-items-end">
+						<div class="col">
+							<h5 class="card-title text-truncate song-name">Song Name</h5>
+							<h6 class="card-subtitle text-truncate song-artist">Song Artist</h6>
+						</div>
+						<div class="col-md-auto align-text-bottom">
+							<small class="card-text song-duration">Dauer: 3min</small>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
+
+<script>
+	const search_url = {{ url_for("spotify_search") | tojson }};
+
+	const inputSpotifySearch = document.getElementById("input-spotify");
+	const btnSpotifySearch = document.getElementById("btn-spotify-search");
+	const spotifyResults = document.getElementById("spotify-results");
+	const tmplSpotifySong = document.getElementById("tmpl-spotify-song");
+
+	inputSpotifySearch.addEventListener("keypress", (e) => {
+		if (e.key == "Enter") spotifySearch();
+	});
+	btnSpotifySearch.addEventListener("click", spotifySearch);
+
+	function spotifySearch() {
+		const q = inputSpotifySearch.value;
+		fetch(`${search_url}?q=${q}`)
+			.then((response) => {
+				btnSpotifySearch.disabled = true;
+				return response.json();
+			})
+			.then(data => {
+				console.log(data);
+				setSongs(data.results);
+			}).finally(() => {
+				btnSpotifySearch.disabled = false;
+			});
+		return true;
+	}
+
+	function setSongs(songs) {
+		// remove children (previous results)
+		while (spotifyResults.firstChild) {
+			spotifyResults.removeChild(spotifyResults.firstChild);
+		}
+		// create song instances from template
+		for (song of songs) {
+			let clone = tmplSpotifySong.content.cloneNode(true);
+			clone.querySelector(".song-name").textContent = song.name;
+			clone.querySelector(".song-artist").textContent = song.artist;
+			clone.querySelector(".song-duration").textContent = `Dauer: ${Math.round(song.duration_ms / 1000 / 60)} Minuten`;
+			clone.querySelector("img").src = song.img_url;
+			clone.firstElementChild.dataset.spotifyUri = song.uri;
+			spotifyResults.appendChild(clone);
+		}
+
+	}
+</script>
+{% endblock %}

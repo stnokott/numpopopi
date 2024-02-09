@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+	{% block head %}
+	<title>{% block title %}{% endblock %} - Marci & Claudi</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+	<link rel="script" href="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}">
+	{% endblock %}
+</head>
+
+<body class="bg-light">
+	<div id="header" class="bg-info w-100 p-3">
+		<div class="fs-1 fw-bold m-0">{{ self.title() }}</div>
+		<div class="fst-italic m-0">Marci & Claudi</div>
+	</div>
+	<div id="content" class="m-2">
+		{% block content %}
+		{% endblock %}
+	</div>
+	<div id="footer" class="bg-info w-100 p-3 text-end">
+		{% block footer %}
+		&copy; Copyright 2024 by Poopi.
+		{% endblock %}
+	</div>
+</body>
+
+</html>
